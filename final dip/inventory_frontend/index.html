@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Login Section (Initial View) -->
+        <div id="loginSection">
+            <div class="header">
+                <h1>Inventory Management System</h1>
+                <p>Please login to continue</p>
+            </div>
+            <div class="login-form">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                </form>
+                <div id="loginAlert"></div>
+            </div>
+        </div>
+
+        <!-- Main Application (Hidden Initially) -->
+        <div id="mainApp" class="hidden">
+            <div class="header">
+                <h1>Inventory Management System</h1>
+                <div style="text-align: right; margin-top: 1rem;">
+                    <span id="userInfo"></span>
+                    <button class="btn btn-secondary" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showTab('dashboard')">Dashboard</button>
+                <button class="nav-tab" onclick="showTab('products')">Products</button>
+                <button class="nav-tab" onclick="showTab('users')" id="usersTab">Users</button>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <h2>Dashboard</h2>
+                <div class="stats-grid" id="statsGrid">
+                    <!-- Stats will be loaded here -->
+                </div>
+                <h3>Low Stock Alerts</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Product ID</th>
+                            <th>Name</th>
+                            <th>Current Stock</th>
+                            <th>Min Level</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lowStockTable">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Products Tab -->
+            <div id="products" class="tab-content">
+                <h2>Product Management</h2>
+                <div class="search-section">
+                    <input type="text" class="search-input" id="productSearch" placeholder="Search products...">
+                    <button class="btn" onclick="searchProducts()">Search</button>
+                    <button class="btn" onclick="showAddProductModal()">Add Product</button>
+                    <button class="btn btn-secondary" onclick="loadAllProducts()">Show All</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Product ID</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Min Level</th>
+                            <th>Max Level</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTable">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="users" class="tab-content">
+                <h2>User Management</h2>
+                <div class="search-section">
+                    <select id="roleFilter">
+                        <option value="">All Roles</option>
+                        <option value="ADMIN">Admin</option>
+                        <option value="MANAGER">Manager</option>
+                        <option value="USER">User</option>
+                    </select>
+                    <button class="btn" onclick="filterByRole()">Filter</button>
+                    <button class="btn" onclick="showAddUserModal()">Add User</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTable">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Product Modal -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeProductModal()">&times;</span>
+            <h2 id="productModalTitle">Add Product</h2>
+            <form id="productForm">
+                <div class="form-group">
+                    <label for="productId">Product ID:</label>
+                    <input type="text" id="productId" name="productId" required>
+                </div>
+                <div class="form-group">
+                    <label for="productName">Name:</label>
+                    <input type="text" id="productName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="productDescription">Description:</label>
+                    <textarea id="productDescription" name="description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="productPrice">Price:</label>
+                    <input type="number" id="productPrice" name="price" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="stockQty">Stock Quantity:</label>
+                    <input type="number" id="stockQty" name="stockQty" required>
+                </div>
+                <div class="form-group">
+                    <label for="minStockLevel">Min Stock Level:</label>
+                    <input type="number" id="minStockLevel" name="minStockLevel" required>
+                </div>
+                <div class="form-group">
+                    <label for="maxStockLevel">Max Stock Level:</label>
+                    <input type="number" id="maxStockLevel" name="maxStockLevel" required>
+                </div>
+                <button type="submit" class="btn">Save Product</button>
+                <button type="button" class="btn btn-secondary" onclick="closeProductModal()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit User Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUserModal()">&times;</span>
+            <h2 id="userModalTitle">Add User</h2>
+            <form id="userForm">
+                <div class="form-group">
+                    <label for="userId">User ID:</label>
+                    <input type="text" id="userId" name="userID" required>
+                </div>
+                <div class="form-group">
+                    <label for="userName">Username:</label>
+                    <input type="text" id="userName" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="userPassword">Password:</label>
+                    <input type="password" id="userPassword" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="userRole">Role:</label>
+                    <select id="userRole" name="role" required>
+                        <option value="">Select Role</option>
+                        <option value="ADMIN">Admin</option>
+                        <option value="MANAGER">Manager</option>
+                        <option value="USER">User</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Save User</button>
+                <button type="button" class="btn btn-secondary" onclick="closeUserModal()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
