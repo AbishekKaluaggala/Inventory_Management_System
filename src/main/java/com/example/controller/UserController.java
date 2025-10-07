@@ -1,165 +1,109 @@
 package com.example.controller;
 
+import com.example.entity.Role;
 import com.example.entity.User;
 import com.example.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Optional;
 
-@RestController
-@RequestMapping("/api/users")
-@CrossOrigin(origins = "*")
+@Controller
+@RequestMapping("/users")
 public class UserController {
 
     @Autowired
     private UserService userService;
 
-    // Get all users
-    @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
+    // Display all users (Admin only)
+    @GetMapping("/list")
+    public String listUsers(Model model) {
         List<User> users = userService.getAllUsers();
-        return ResponseEntity.ok(users);
+        model.addAttribute("users", users);
+        return "user-list";
     }
 
-    // Get user by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable String id) {
-        Optional<User> user = userService.getUserById(id);
-        if (user.isPresent()) {
-            return ResponseEntity.ok(user.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    // Show add user form
+    @GetMapping("/add")
+    public String showAddUserForm(Model model) {
+        model.addAttribute("user", new User());
+        model.addAttribute("roles", Role.values()); // Pass all roles to form
+        return "user-add";
     }
 
-    // Create new user
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        try {
-            User savedUser = userService.saveUser(user);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+    // Save new user
+    @PostMapping("/add")
+    public String addUser(@ModelAttribute User user) {
+        userService.saveUser(user);
+        return "redirect:/users/list";
     }
 
-    // Update user
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable String id, @RequestBody User user) {
-        Optional<User> existingUser = userService.getUserById(id);
-        if (existingUser.isPresent()) {
-            user.setUserId(id); // Make sure this matches your User entity getter/setter
-            User updatedUser = userService.saveUser(user);
-            return ResponseEntity.ok(updatedUser);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    // Show login form
+    @GetMapping("/login")
+    public String showLoginForm() {
+        return "login";
     }
 
-    // Delete user
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
-        Optional<User> user = userService.getUserById(id);
-        if (user.isPresent()) {
-            userService.deleteUser(id);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    // Login endpoint
+    // Process login
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
-        User user = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
+    public String login(@RequestParam String username,
+                        @RequestParam String password,
+                        Model model) {
+        User user = userService.login(username, password);
         if (user != null) {
-            LoginResponse response = new LoginResponse(true, "Login successful", user);
-            return ResponseEntity.ok(response);
+            // Login successful
+            model.addAttribute("user", user);
+            return "redirect:/dashboard";
         } else {
-            LoginResponse response = new LoginResponse(false, "Invalid username or password", null);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            // Login failed
+            model.addAttribute("error", "Invalid username, password, or account is disabled");
+            return "login";
         }
     }
 
-    // Registration endpoint
-    @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
-        try {
-            // Check if user ID already exists
-            Optional<User> existingUserById = userService.getUserById(user.getUserId());
-            if (existingUserById.isPresent()) {
-                return ResponseEntity.badRequest().body("User ID already exists");
-            }
-
-            // Check if username already exists
-            List<User> allUsers = userService.getAllUsers();
-            boolean usernameExists = allUsers.stream()
-                    .anyMatch(u -> u.getUsername().equalsIgnoreCase(user.getUsername()));
-
-            if (usernameExists) {
-                return ResponseEntity.badRequest().body("Username already exists");
-            }
-
-            // Only allow USER and MANAGER roles for self-registration
-            String role = user.getRole();
-            if (!"USER".equals(role) && !"MANAGER".equals(role)) {
-                user.setRole("USER"); // Default to USER if invalid role
-            }
-
-            // Create the user
-            User savedUser = userService.saveUser(user);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error creating user: " + e.getMessage());
+    // Show edit user form (Admin only)
+    @GetMapping("/edit/{id}")
+    public String showEditUserForm(@PathVariable String id, Model model) {
+        Optional<User> user = userService.getUserById(id);
+        if (user.isPresent()) {
+            model.addAttribute("user", user.get());
+            model.addAttribute("roles", Role.values());
+            return "user-edit";
         }
+        return "redirect:/users/list";
     }
 
-    // Get users by role
+    // Update user role (Admin only)
+    @PostMapping("/update-role")
+    public String updateUserRole(@RequestParam String userId,
+                                 @RequestParam Role role) {
+        userService.updateUserRole(userId, role);
+        return "redirect:/users/list";
+    }
+
+    // Toggle user active status (Admin only)
+    @GetMapping("/toggle-status/{id}")
+    public String toggleUserStatus(@PathVariable String id) {
+        userService.toggleUserStatus(id);
+        return "redirect:/users/list";
+    }
+
+    // Delete user (Admin only)
+    @GetMapping("/delete/{id}")
+    public String deleteUser(@PathVariable String id) {
+        userService.deleteUser(id);
+        return "redirect:/users/list";
+    }
+
+    // Get users by role (Admin viewing specific role)
     @GetMapping("/role/{role}")
-    public ResponseEntity<List<User>> getUsersByRole(@PathVariable String role) {
-        List<User> users = userService.getUserByRole(role);
-        return ResponseEntity.ok(users);
-    }
-
-    // Inner classes for login request/response
-    public static class LoginRequest {
-        private String username;
-        private String password;
-
-        public LoginRequest() {}
-        public LoginRequest(String username, String password) {
-            this.username = username;
-            this.password = password;
-        }
-
-        public String getUsername() { return username; }
-        public void setUsername(String username) { this.username = username; }
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
-    }
-
-    public static class LoginResponse {
-        private boolean success;
-        private String message;
-        private User user;
-
-        public LoginResponse() {}
-        public LoginResponse(boolean success, String message, User user) {
-            this.success = success;
-            this.message = message;
-            this.user = user;
-        }
-
-        public boolean isSuccess() { return success; }
-        public void setSuccess(boolean success) { this.success = success; }
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
-        public User getUser() { return user; }
-        public void setUser(User user) { this.user = user; }
+    public String getUsersByRole(@PathVariable Role role, Model model) {
+        List<User> users = userService.getUsersByRole(role);
+        model.addAttribute("users", users);
+        model.addAttribute("selectedRole", role);
+        return "user-list";
     }
 }

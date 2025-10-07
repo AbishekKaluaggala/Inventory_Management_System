@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 
 public class User {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "userID")
     private String userId;
 
@@ -19,12 +20,17 @@ public class User {
     private String password;
 
 
+    @Enumerated(EnumType.STRING)
     @Column (name = "role", nullable = false)
-    private String role;
+    private Role role;
+
+
+    @Column(name = "isActive ", nullable = false)
+    private boolean isActive = true;
 
     public User(){}
 
-    public  User(String userID, String username, String password, String role){
+    public  User(String userID, String username, String password, Role role){
         this.userId = userID;
         this.username = username;
         this.password = password;
@@ -40,8 +46,11 @@ public class User {
     public  String getPassword() {return password;}
     public void setPassword(String password) {this.password = password;}
 
-    public String getRole() {return role;}
-    public void setRole(String role) {this.role = role;}
+    public Role getRole(){return role;}
+    public void setRole(Role role){this.role = role;}
+
+    public boolean isActive(){return isActive;}
+    public void setActive(boolean active){isActive = active;}
 
 
 

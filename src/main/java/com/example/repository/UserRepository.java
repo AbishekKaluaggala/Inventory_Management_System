@@ -5,12 +5,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
 import java.util.List;
+import com.example.entity.Role;
+
 
 @Repository
 public interface UserRepository extends JpaRepository<User,String> {
     Optional<User>findByUsername(String username);
 
-    Optional<User>findByUsernameAndPassword(String username, String password);
+    List<User> findByRole(Role role);
 
-    List<User>findByRole(String role);
+    List<User> findByIsActive(boolean b);
 }
