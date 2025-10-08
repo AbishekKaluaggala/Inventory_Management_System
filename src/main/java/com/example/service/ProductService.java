@@ -41,8 +41,10 @@ public class ProductService {
                 .toList();
     }
 
-    public List<Product>searchProductByName(String keyword){
-        return productRepository.findByNameContaining(keyword);
+    public List<Product> searchProductByName(String keyword) {
+        return productRepository.findAll().stream()
+                .filter(p -> p.getName().toLowerCase().contains(keyword.toLowerCase()))
+                .toList();
     }
 
     public void deleteProduct(String productID){
