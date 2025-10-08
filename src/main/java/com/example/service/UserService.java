@@ -15,8 +15,12 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    // Save new user
+    // Save new user - FIXED VERSION
     public User saveUser(User user) {
+        // Generate UUID if not provided
+        if (user.getUserId() == null || user.getUserId().isEmpty()) {
+            user.setUserId(java.util.UUID.randomUUID().toString());
+        }
         return userRepository.save(user);
     }
 

@@ -20,25 +20,24 @@ public class UserController {
 
     // Display all users (Admin only)
     @GetMapping("/list")
-    public String listUsers(Model model) {
-        List<User> users = userService.getAllUsers();
-        model.addAttribute("users", users);
-        return "user-list";
+    @ResponseBody  // Return JSON instead of HTML page
+    public List<User> listUsers() {
+        return userService.getAllUsers();
     }
 
     // Show add user form
     @GetMapping("/add")
     public String showAddUserForm(Model model) {
         model.addAttribute("user", new User());
-        model.addAttribute("roles", Role.values()); // Pass all roles to form
+        model.addAttribute("roles", Role.values());
         return "user-add";
     }
 
-    // Save new user
+    // Save new user - FIXED FOR POSTMAN
     @PostMapping("/add")
-    public String addUser(@ModelAttribute User user) {
-        userService.saveUser(user);
-        return "redirect:/users/list";
+    @ResponseBody  // Return JSON response
+    public User addUser(@RequestBody User user) {
+        return userService.saveUser(user);
     }
 
     // Show login form
@@ -54,11 +53,9 @@ public class UserController {
                         Model model) {
         User user = userService.login(username, password);
         if (user != null) {
-            // Login successful
             model.addAttribute("user", user);
             return "redirect:/dashboard";
         } else {
-            // Login failed
             model.addAttribute("error", "Invalid username, password, or account is disabled");
             return "login";
         }
@@ -78,32 +75,31 @@ public class UserController {
 
     // Update user role (Admin only)
     @PostMapping("/update-role")
-    public String updateUserRole(@RequestParam String userId,
-                                 @RequestParam Role role) {
-        userService.updateUserRole(userId, role);
-        return "redirect:/users/list";
+    @ResponseBody
+    public User updateUserRole(@RequestParam String userId,
+                               @RequestParam Role role) {
+        return userService.updateUserRole(userId, role);
     }
 
     // Toggle user active status (Admin only)
     @GetMapping("/toggle-status/{id}")
-    public String toggleUserStatus(@PathVariable String id) {
-        userService.toggleUserStatus(id);
-        return "redirect:/users/list";
+    @ResponseBody
+    public User toggleUserStatus(@PathVariable String id) {
+        return userService.toggleUserStatus(id);
     }
 
     // Delete user (Admin only)
     @GetMapping("/delete/{id}")
+    @ResponseBody
     public String deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
-        return "redirect:/users/list";
+        return "User deleted successfully";
     }
 
     // Get users by role (Admin viewing specific role)
     @GetMapping("/role/{role}")
-    public String getUsersByRole(@PathVariable Role role, Model model) {
-        List<User> users = userService.getUsersByRole(role);
-        model.addAttribute("users", users);
-        model.addAttribute("selectedRole", role);
-        return "user-list";
+    @ResponseBody
+    public List<User> getUsersByRole(@PathVariable Role role) {
+        return userService.getUsersByRole(role);
     }
 }
