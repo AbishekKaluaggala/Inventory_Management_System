@@ -29,6 +29,9 @@ public class Product {
     @Column (name = "maxStockLevel", nullable = false)
     private Integer maxStockLevel;
 
+    @Column(name = "categoryID")
+    private String categoryId;
+
     public Product(){}
 
     public Product(String productId, String name,String description,BigDecimal price, Integer stockQty, Integer minStockLevel, Integer maxStockLevel){
@@ -62,6 +65,9 @@ public class Product {
 
     public Integer getMaxStockLevel(){return maxStockLevel;}
     public void setMaxStockLevel(Integer maxStockLevel){this.maxStockLevel = maxStockLevel;}
+
+    public String getCategoryId() { return categoryId; }
+    public void setCategoryId(String categoryId) { this.categoryId = categoryId; }
 
 
     

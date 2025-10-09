@@ -3,6 +3,7 @@ package com.example.service;
 import com.example.entity.Order;
 import com.example.entity.OrderItem;
 import com.example.entity.Product;
+import com.example.repository.InvoiceRepository;
 import com.example.repository.OrderRepository;
 import com.example.repository.OrderItemRepository;
 import com.example.repository.ProductRepository;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class OrderService {  // ✅ CORRECT - Changed from "Order" to "OrderService"
+public class OrderService {
 
     @Autowired
     private OrderRepository orderRepository;
@@ -23,6 +24,9 @@ public class OrderService {  // ✅ CORRECT - Changed from "Order" to "OrderServ
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private InvoiceService invoiceService;
 
     public Order createOrder(Order order, List<OrderItem> orderItems) {  // ✅ Now works - no conflict
         // Calculate total amount
@@ -42,6 +46,14 @@ public class OrderService {  // ✅ CORRECT - Changed from "Order" to "OrderServ
             updateProductStock(item.getProductId(), item.getQuantity());
         }
 
+        //auto generate invoice
+        try{
+            invoiceService.generateInvoiceFromOrder(savedOrder.getOrderId());
+        }catch (Exception e){
+            // Log error but don't fail order creation
+            System.out.println("Failed to generate invoice: " + e.getMessage());
+        }
+
         return savedOrder;
     }
 
@@ -54,23 +66,23 @@ public class OrderService {  // ✅ CORRECT - Changed from "Order" to "OrderServ
         }
     }
 
-    public List<Order> getAllOrders() {  // ✅ Clean now
+    public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
 
-    public Optional<Order> getOrderById(String id) {  // ✅ Clean now
+    public Optional<Order> getOrderById(String id) {
         return orderRepository.findById(id);
     }
 
-    public List<Order> getOrdersByUserId(String userId) {  // ✅ Clean now
+    public List<Order> getOrdersByUserId(String userId) {
         return orderRepository.findByUserId(userId);
     }
 
-    public List<Order> getOrdersByStatus(String status) {  // ✅ Clean now
+    public List<Order> getOrdersByStatus(String status) {
         return orderRepository.findByStatus(status);
     }
 
-    public Order updateOrderStatus(String orderId, String status) {  // ✅ Clean now
+    public Order updateOrderStatus(String orderId, String status) {
         Optional<Order> orderOpt = orderRepository.findById(orderId);
         if (orderOpt.isPresent()) {
             Order order = orderOpt.get();
