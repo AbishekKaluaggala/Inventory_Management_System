@@ -25,6 +25,8 @@ public class ProductService {
         return productRepository.findById(productId);
     }
 
+
+
     public Product updateStock(String productID, Integer newStock){
         Optional<Product>productOpt = productRepository.findById(productID);
                 if(productOpt.isPresent()){
@@ -42,9 +44,7 @@ public class ProductService {
     }
 
     public List<Product> searchProductByName(String keyword) {
-        return productRepository.findAll().stream()
-                .filter(p -> p.getName().toLowerCase().contains(keyword.toLowerCase()))
-                .toList();
+        return productRepository.findByNameContaining(keyword);
     }
 
     public void deleteProduct(String productID){
