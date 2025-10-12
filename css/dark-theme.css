@@ -1,0 +1,76 @@
+/* Dark Theme (Default) */
+[data-theme="dark"],
+:root {
+    --primary-bg: #1a1d29;
+    --secondary-bg: #252836;
+    --card-bg: #2d3142;
+    --accent: #4f46e5;
+    --accent-hover: #4338ca;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
+    --text-primary: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --border: #374151;
+    --shadow: rgba(0, 0, 0, 0.3);
+    --transition: all 0.3s ease;
+}
+
+/* Light Theme */
+[data-theme="light"] {
+    --primary-bg: #ffffff;
+    --secondary-bg: #f9fafb;
+    --card-bg: #ffffff;
+    --accent: #4f46e5;
+    --accent-hover: #4338ca;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --border: #e5e7eb;
+    --shadow: rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: var(--transition);
+}
+
+.theme-toggle:hover {
+    background: var(--secondary-bg);
+    transform: translateY(-2px);
+}
+
+.theme-icon {
+    font-size: 16px;
+}
+
+/* Smooth transitions for theme switching */
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.sidebar,
+.top-bar,
+.card,
+.stat-card,
+.modal-content,
+.form-group input,
+.form-group select,
+.form-group textarea {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}

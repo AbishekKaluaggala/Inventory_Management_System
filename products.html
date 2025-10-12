@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - Inventory Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Product Grid View */
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--bg-tertiary);
+            padding: 0.25rem;
+            border-radius: var(--radius-md);
+        }
+
+        .view-toggle button {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+        }
+
+        .view-toggle button.active {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .product-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .product-id {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 150px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 3rem;
+            color: var(--text-muted);
+        }
+
+        .product-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .product-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .stock-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .stock-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .stock-value {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .stock-value.low {
+            color: var(--danger);
+        }
+
+        .stock-value.normal {
+            color: var(--success);
+        }
+
+        /* Modal Styles (Same as users page) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-dialog {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+            font-size: 1.25rem;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-hover);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        
+
+        /* Filter Section Styling */
+.filter-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.5rem 0 2rem 0;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    flex-wrap: wrap;
+}
+
+.filter-section {
+    display: flex;
+    gap: 0.5rem; /* Adds space between child elements */
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap; /* Allows wrapping on smaller screens */
+}
+
+.filter-section .view-toggle {
+    margin-left: auto;
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+    .filter-section {
+        gap: 0.75rem;
+        margin: 1rem 0 1.5rem 0;
+        padding: 0.75rem;
+    }
+    
+    .filter-section select {
+        min-width: 100%;
+        margin: 0.25rem 0;
+    }
+    
+    .filter-section .view-toggle {
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+}
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="sidebar-brand">
+                    <h3>Inventory MS</h3>
+                    <p>Management System</p>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a href="dashboard.html" class="nav-item">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Management</div>
+                    <a href="users.html" class="nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>Users</span>
+                    </a>
+                    <a href="products.html" class="nav-item active">
+                        <i class="fas fa-box"></i>
+                        <span>Products</span>
+                    </a>
+                    <a href="categories.html" class="nav-item">
+                        <i class="fas fa-tags"></i>
+                        <span>Categories</span>
+                    </a>
+                    <a href="orders.html" class="nav-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Orders</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Financial</div>
+                    <a href="invoices.html" class="nav-item">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Invoices</span>
+                    </a>
+                    <a href="payments.html" class="nav-item">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Payments</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Reports</div>
+                    <a href="reports.html" class="nav-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Analytics</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Navbar -->
+            <header class="top-navbar">
+                <div class="navbar-left">
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="navbar-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search products..." id="searchInput">
+                    </div>
+                </div>
+
+                <div class="navbar-right">
+                    <div class="navbar-icon">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge-notification">3</span>
+                    </div>
+                    <div class="user-menu">
+                        <div class="user-avatar" id="userAvatar">A</div>
+                        <div class="user-info">
+                            <div class="user-name" id="userName">Admin</div>
+                            <div class="user-role" id="userRole">Administrator</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="handleLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="content-area">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Product Management</h1>
+                        <!-- <p class="page-subtitle">Manage your inventory products</p> -->
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-secondary" onclick="showLowStockProducts()">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Low Stock (<span id="lowStockCount">0</span>)
+                        </button>
+                        <button class="btn btn-primary" onclick="openAddProductModal()">
+                            <i class="fas fa-plus"></i>
+                            Add Product
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="filter-section" >
+                    <select class="form-control" id="categoryFilter" onchange="filterProducts()">
+                        <option value="">All Categories</option>
+                    </select>
+                    
+                    
+
+                    <select class="form-control" id="stockFilter" onchange="filterProducts()">
+                        <option value="">All Stock Levels</option>
+                        <option value="low">Low Stock</option>
+                        <option value="normal">Normal Stock</option>
+                        <option value="out">Out of Stock</option>
+                    </select>
+                    
+
+                    <div class="d-flex align-items-center gap-2" style="margin-left: auto;">
+                        <span class="text-secondary">Total: <strong id="totalCount">0</strong></span>
+                        <div class="view-toggle">
+                            <button class="active" onclick="switchView('grid')">
+                                <i class="fas fa-th"></i>
+                            </button>
+                            <button onclick="switchView('table')">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Grid View -->
+                <div id="productsGrid" class="products-grid">
+                    <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+
+                <!-- Products Table View (Hidden by default) -->
+                <div id="productsTable" class="card" style="display: none;">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal" id="addProductModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Product</h3>
+                <button class="modal-close" onclick="closeAddProductModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="addProductForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="newProductId">Product ID</label>
+                        <input type="text" class="form-control" id="newProductId" placeholder="P001" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="newProductName">Product Name</label>
+                        <input type="text" class="form-control" id="newProductName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="newProductDescription">Description</label>
+                        <textarea class="form-control" id="newProductDescription" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="newProductCategory">Category</label>
+                        <select class="form-control" id="newProductCategory">
+                            <option value="">Select Category</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="newProductPrice">Price (Rs.)</label>
+                            <input type="number" class="form-control" id="newProductPrice" step="0.01" min="0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="newProductStock">Stock Quantity</label>
+                            <input type="number" class="form-control" id="newProductStock" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="newProductMinStock">Min Stock Level</label>
+                            <input type="number" class="form-control" id="newProductMinStock" min="0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="newProductMaxStock">Max Stock Level</label>
+                            <input type="number" class="form-control" id="newProductMaxStock" min="0" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddProductModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Create Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div class="modal" id="editProductModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Product</h3>
+                <button class="modal-close" onclick="closeEditProductModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="editProductForm">
+                <input type="hidden" id="editProductId">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="editProductName">Product Name</label>
+                        <input type="text" class="form-control" id="editProductName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="editProductDescription">Description</label>
+                        <textarea class="form-control" id="editProductDescription" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="editProductCategory">Category</label>
+                        <select class="form-control" id="editProductCategory">
+                            <option value="">Select Category</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="editProductPrice">Price (Rs.)</label>
+                            <input type="number" class="form-control" id="editProductPrice" step="0.01" min="0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="editProductStock">Stock Quantity</label>
+                            <input type="number" class="form-control" id="editProductStock" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="editProductMinStock">Min Stock Level</label>
+                            <input type="number" class="form-control" id="editProductMinStock" min="0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="editProductMaxStock">Max Stock Level</label>
+                            <input type="number" class="form-control" id="editProductMaxStock" min="0" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditProductModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Update Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/products.js"></script>
+</body>
+</html>

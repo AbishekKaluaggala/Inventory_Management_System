@@ -1,0 +1,138 @@
+/* Responsive Media Queries */
+
+/* Tablet (1024px and below) */
+@media (max-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .content-area {
+        padding: 24px;
+    }
+}
+
+/* Mobile (768px and below) */
+@media (max-width: 768px) {
+    /* Sidebar becomes overlay */
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    /* Mobile menu toggle */
+    .mobile-menu-toggle {
+        display: block;
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        font-size: 24px;
+        cursor: pointer;
+    }
+    
+    .top-bar {
+        padding: 12px 16px;
+    }
+    
+    .page-title {
+        font-size: 20px;
+    }
+    
+    .content-area {
+        padding: 16px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .card {
+        padding: 16px;
+    }
+    
+    .login-box {
+        padding: 32px 24px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        max-width: none;
+    }
+    
+    .table-container {
+        overflow-x: scroll;
+    }
+    
+    table {
+        min-width: 600px;
+    }
+    
+    /* Hide user info text on mobile */
+    .user-info {
+        display: none;
+    }
+    
+    /* Stack form buttons */
+    .modal-footer {
+        flex-direction: column;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+    }
+}
+
+/* Small Mobile (480px and below) */
+@media (max-width: 480px) {
+    .login-header h1 {
+        font-size: 24px;
+    }
+    
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+    
+    .stat-icon {
+        margin: 0 auto;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .top-bar-actions {
+        gap: 8px;
+    }
+}
+
+/* Desktop menu toggle (hidden by default) */
+.mobile-menu-toggle {
+    display: none;
+}
+
+/* Sidebar overlay for mobile */
+@media (max-width: 768px) {
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+    }
+    
+    .sidebar-overlay.active {
+        display: block;
+    }
+}
