@@ -7,6 +7,7 @@ import com.example.service.OrderService;
 import com.example.service.ProductService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -31,31 +32,37 @@ public class OrderController {
         return "order-list";
     }
 
-    @GetMapping("/create")
-    public String showCreateOrderForm(Model model) {
-        model.addAttribute("order", new Order());
-        model.addAttribute("products", productService.getAllProducts());
-        return "create-order";
-    }
-
     @PostMapping("/create")
-    public String createOrder(@ModelAttribute Order order,
-                              @RequestParam List<String> productIds,
-                              @RequestParam List<Integer> quantities,
-                              HttpSession session) {
-        // Get logged in user
-        var user = session.getAttribute("loggedInUser");
-        if (user instanceof com.example.entity.User) {
-            order.setUserId(((com.example.entity.User) user).getUserId());
+    @ResponseBody
+    public ResponseEntity<?> createOrder(@RequestParam String customerName,
+                                         @RequestParam String shippingAddress,
+                                         @RequestParam(required = false) String userId,
+                                         @RequestParam List<String> productIds,
+                                         @RequestParam List<Integer> quantities) {
+        try {
+            Order order = new Order();
+            order.setCustomerName(customerName);
+            order.setShippingAddress(shippingAddress);
+
+            // If no userId provided, use a default
+            if (userId == null || userId.isEmpty()) {
+                userId = "GUEST";
+            }
+            order.setUserId(userId);
+
+            // Create order items using the existing private method
+            List<OrderItem> orderItems = createOrderItems(productIds, quantities);
+
+            // Call service to create order
+            Order savedOrder = orderService.createOrder(order, orderItems);
+
+            return ResponseEntity.ok(savedOrder);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
         }
-
-        // Create order items
-        List<OrderItem> orderItems = createOrderItems(productIds, quantities);
-
-        orderService.createOrder(order, orderItems);
-        return "redirect:/orders/manage";
     }
 
+    // Keep your existing createOrderItems method - don't change it
     private List<OrderItem> createOrderItems(List<String> productIds, List<Integer> quantities) {
         List<OrderItem> orderItems = new ArrayList<>();
 
@@ -63,24 +70,20 @@ public class OrderController {
             String productId = productIds.get(i);
             Integer quantity = quantities.get(i);
 
-            // Skip if productId is empty or quantity is invalid
             if (productId == null || productId.isEmpty() || quantity == null || quantity <= 0) {
                 continue;
             }
 
-            // Get product price from database
             Optional<Product> productOpt = productService.getProductById(productId);
             if (productOpt.isPresent()) {
                 Product product = productOpt.get();
 
-                // Check stock availability
                 if (product.getStockQty() < quantity) {
                     throw new RuntimeException("Insufficient stock for product: " + product.getName());
                 }
 
-                // Create order item with automatic subtotal calculation
                 OrderItem orderItem = new OrderItem(
-                        "", // orderId will be set later in service
+                        "",
                         productId,
                         quantity,
                         product.getPrice()
