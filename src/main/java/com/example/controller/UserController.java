@@ -4,11 +4,13 @@ import com.example.entity.Role;
 import com.example.entity.User;
 import com.example.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -48,16 +50,20 @@ public class UserController {
 
     // Process login
     @PostMapping("/login")
-    public String login(@RequestParam String username,
-                        @RequestParam String password,
-                        Model model) {
+    @ResponseBody
+    public ResponseEntity<?> login(@RequestParam String username,
+                                   @RequestParam String password) {
         User user = userService.login(username, password);
-        if (user != null) {
-            model.addAttribute("user", user);
-            return "redirect:/dashboard";
+
+        if (user != null && user.isActive()) {
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "username", user.getUsername(),
+                    "role", user.getRole().name()
+            ));
         } else {
-            model.addAttribute("error", "Invalid username, password, or account is disabled");
-            return "login";
+            return ResponseEntity.status(401)
+                    .body(Map.of("status", "error", "message", "Invalid username or password"));
         }
     }
 

@@ -19,6 +19,20 @@ public class InvoiceController {
     @Autowired
     private InvoiceService invoiceService;
 
+    // Add this method right after @Autowired
+    @GetMapping
+    public ResponseEntity<List<Invoice>> getAllInvoices() {
+        return ResponseEntity.ok(invoiceService.getAllInvoices());
+    }
+
+    // Also add this method for getting invoice by order
+    @GetMapping("/order/{orderId}")
+    public ResponseEntity<Invoice> getInvoiceByOrderId(@PathVariable String orderId) {
+        Optional<Invoice> invoice = invoiceService.getInvoiceByOrderId(orderId);
+        return invoice.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    }
+
+
     //get all invoices
     @GetMapping("/{id}")
     public ResponseEntity<Invoice>getInvoiceById(@PathVariable String id){
