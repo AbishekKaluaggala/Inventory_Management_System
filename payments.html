@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payments - Inventory Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Payment Specific Styles */
+        .payment-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-dot.success { background: var(--success); }
+        .status-dot.pending { background: var(--warning); }
+        .status-dot.failed { background: var(--danger); }
+        .status-dot.refunded { background: var(--info); }
+
+        /* Payment Method Icons */
+        .payment-method-icon {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+        }
+
+        .payment-method-icon i {
+            color: var(--accent-primary);
+        }
+
+        /* Payment Stats */
+        .payment-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .payment-stat-card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .payment-stat-card.success {
+            border-left-color: var(--success);
+        }
+
+        .payment-stat-card.warning {
+            border-left-color: var(--warning);
+        }
+
+        .payment-stat-card.danger {
+            border-left-color: var(--danger);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Filter Section */
+        .filter-section {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-section .form-control {
+            width: auto;
+            min-width: 180px;
+        }
+
+        /* Payment Details Card */
+        .payment-detail-card {
+            background: var(--bg-tertiary);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            margin-bottom: 1rem;
+        }
+
+        .payment-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .payment-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .payment-detail-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .payment-detail-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Transaction Timeline */
+        .transaction-timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.5rem;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            border: 3px solid var(--bg-secondary);
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: -1.0625rem;
+            top: 12px;
+            width: 2px;
+            height: calc(100% - 12px);
+            background: var(--border-color);
+        }
+
+        .timeline-item:last-child::after {
+            display: none;
+        }
+
+        .timeline-content {
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+        }
+
+        .timeline-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .payment-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="sidebar-brand">
+                    <h3>Inventory MS</h3>
+                    <p>Management System</p>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a href="dashboard.html" class="nav-item">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Management</div>
+                    <a href="users.html" class="nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>Users</span>
+                    </a>
+                    <a href="products.html" class="nav-item">
+                        <i class="fas fa-box"></i>
+                        <span>Products</span>
+                    </a>
+                    <!-- <a href="categories.html" class="nav-item">
+                        <i class="fas fa-tags"></i>
+                        <span>Categories</span>
+                    </a> -->
+                    <a href="orders.html" class="nav-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Orders</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Financial</div>
+                    <a href="invoices.html" class="nav-item">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Invoices</span>
+                    </a>
+                    <a href="payments.html" class="nav-item active">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Payments</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Reports</div>
+                    <a href="reports.html" class="nav-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Analytics</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Navbar -->
+            <header class="top-navbar">
+                <div class="navbar-left">
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="navbar-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search payments..." id="searchInput">
+                    </div>
+                </div>
+
+                <div class="navbar-right">
+                    <div class="navbar-icon">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge-notification">3</span>
+                    </div>
+                    <div class="user-menu">
+                        <div class="user-avatar" id="userAvatar">A</div>
+                        <div class="user-info">
+                            <div class="user-name" id="userName">Admin</div>
+                            <div class="user-role" id="userRole">Administrator</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="handleLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="content-area">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Payment Management</h1>
+                        <p class="page-subtitle">Track and manage payment transactions</p>
+                    </div>
+                </div>
+
+                <!-- Payment Stats -->
+                <div class="payment-stats">
+                    <div class="payment-stat-card success">
+                        <div class="stat-label">Total Payments</div>
+                        <div class="stat-value" id="totalPaymentsAmount">Rs. 0.00</div>
+                    </div>
+                    <div class="payment-stat-card success">
+                        <div class="stat-label">Successful Payments</div>
+                        <div class="stat-value" id="successfulCount">0</div>
+                    </div>
+                    <div class="payment-stat-card warning">
+                        <div class="stat-label">Pending Payments</div>
+                        <div class="stat-value" id="pendingCount">0</div>
+                    </div>
+                    <div class="payment-stat-card danger">
+                        <div class="stat-label">Failed Payments</div>
+                        <div class="stat-value" id="failedCount">0</div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="filter-section">
+                    <select class="form-control" id="statusFilter" onchange="filterPayments()">
+                        <option value="">All Status</option>
+                        <option value="SUCCESS">Success</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="FAILED">Failed</option>
+                        <option value="REFUNDED">Refunded</option>
+                    </select>
+
+                    <select class="form-control" id="methodFilter" onchange="filterPayments()">
+                        <option value="">All Methods</option>
+                        <option value="CASH">Cash</option>
+                        <option value="CARD">Card</option>
+                        <option value="BANK_TRANSFER">Bank Transfer</option>
+                        <option value="CHEQUE">Cheque</option>
+                        <option value="ONLINE">Online</option>
+                    </select>
+
+                    <input type="date" class="form-control" id="startDateFilter" onchange="filterPayments()" placeholder="Start Date">
+                    <input type="date" class="form-control" id="endDateFilter" onchange="filterPayments()" placeholder="End Date">
+
+                    <div class="d-flex align-items-center gap-2" style="margin-left: auto;">
+                        <span class="text-secondary">Total: <strong id="totalCount">0</strong></span>
+                    </div>
+                </div>
+
+                <!-- Payments Table -->
+                <div class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Payment ID</th>
+                                    <th>Invoice ID</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentsTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center">
+                                        <div class="loading-container">
+                                            <div class="spinner"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- View Payment Modal -->
+    <div class="modal" id="viewPaymentModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Payment Details</h3>
+                <button class="modal-close" onclick="closeViewPaymentModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="paymentDetailsContent">
+                <div class="loading-container">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Payment Status Modal -->
+    <div class="modal" id="updateStatusModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Update Payment Status</h3>
+                <button class="modal-close" onclick="closeUpdateStatusModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="updateStatusForm">
+                    <input type="hidden" id="updatePaymentId">
+
+                    <div class="form-group">
+                        <label class="form-label">Current Status</label>
+                        <input type="text" class="form-control" id="currentStatus" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="newStatus">New Status</label>
+                        <select class="form-control" id="newStatus" required>
+                            <option value="">Select Status</option>
+                            <option value="SUCCESS">Success</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="FAILED">Failed</option>
+                            <option value="REFUNDED">Refunded</option>
+                        </select>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary" onclick="closeUpdateStatusModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i>
+                            Update Status
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/payments.js"></script>
+</body>
+</html>

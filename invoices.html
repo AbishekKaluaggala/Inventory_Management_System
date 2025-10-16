@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoices - Inventory Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Invoice Specific Styles */
+        .invoice-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-dot.paid { background: var(--success); }
+        .status-dot.unpaid { background: var(--warning); }
+        .status-dot.overdue { background: var(--danger); }
+        .status-dot.cancelled { background: var(--text-muted); }
+
+        /* Invoice Details */
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .invoice-company {
+            flex: 1;
+        }
+
+        .company-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .company-details {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        .invoice-meta {
+            text-align: right;
+        }
+
+        .invoice-number {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .invoice-dates {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Invoice Table */
+        .invoice-table {
+            margin: 2rem 0;
+        }
+
+        .invoice-table th {
+            background: var(--bg-tertiary);
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+        }
+
+        .invoice-table td {
+            padding: 0.75rem 1rem;
+        }
+
+        .invoice-totals {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .totals-section {
+            min-width: 300px;
+            background: var(--bg-tertiary);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            font-size: 0.9375rem;
+        }
+
+        .total-row.final {
+            border-top: 2px solid var(--border-color);
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        /* Payment Summary */
+        .payment-summary {
+            background: var(--bg-tertiary);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            margin-top: 2rem;
+        }
+
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            margin-bottom: 0.75rem;
+        }
+
+        .payment-info {
+            flex: 1;
+        }
+
+        .payment-date {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        .payment-method {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .payment-amount {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        /* Action Buttons */
+        .action-btns {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .btn-icon {
+            padding: 0.5rem;
+            width: 36px;
+            height: 36px;
+        }
+
+        /* Generate Invoice Form */
+        .order-select-item {
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .order-select-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .order-info h4 {
+            margin: 0 0 0.25rem 0;
+            color: var(--text-primary);
+        }
+
+        .order-info p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-section .form-control {
+            width: auto;
+            min-width: 180px;
+        }
+
+        @media print {
+            .sidebar, .top-navbar, .page-header, .action-btns, .btn {
+                display: none !important;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .content-area {
+                padding: 0;
+            }
+
+            body {
+                background: white;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .invoice-header {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .invoice-meta {
+                text-align: left;
+            }
+
+            .totals-section {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="sidebar-brand">
+                    <h3>Inventory MS</h3>
+                    <p>Management System</p>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a href="dashboard.html" class="nav-item">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Management</div>
+                    <a href="users.html" class="nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>Users</span>
+                    </a>
+                    <a href="products.html" class="nav-item">
+                        <i class="fas fa-box"></i>
+                        <span>Products</span>
+                    </a>
+                    <!-- <a href="categories.html" class="nav-item">
+                        <i class="fas fa-tags"></i>
+                        <span>Categories</span>
+                    </a> -->
+                    <a href="orders.html" class="nav-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Orders</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Financial</div>
+                    <a href="invoices.html" class="nav-item active">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Invoices</span>
+                    </a>
+                    <a href="payments.html" class="nav-item">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Payments</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Reports</div>
+                    <a href="reports.html" class="nav-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Analytics</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Navbar -->
+            <header class="top-navbar">
+                <div class="navbar-left">
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="navbar-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search invoices..." id="searchInput">
+                    </div>
+                </div>
+
+                <div class="navbar-right">
+                    <div class="navbar-icon">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge-notification">3</span>
+                    </div>
+                    <div class="user-menu">
+                        <div class="user-avatar" id="userAvatar">A</div>
+                        <div class="user-info">
+                            <div class="user-name" id="userName">Admin</div>
+                            <div class="user-role" id="userRole">Administrator</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="handleLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="content-area">
+                <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 class="page-title">Invoice Management</h1>
+                        <p class="page-subtitle">Track and manage customer invoices</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="openGenerateInvoiceModal()">
+                        <i class="fas fa-plus"></i>
+                        Generate Invoice
+                    </button>
+                </div>
+
+                <!-- Filters -->
+                <div class="filter-section">
+                    <select class="form-control" id="statusFilter" onchange="filterInvoices()">
+                        <option value="">All Status</option>
+                        <option value="PAID">Paid</option>
+                        <option value="UNPAID">Unpaid</option>
+                        <option value="OVERDUE">Overdue</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
+
+                    <input type="date" class="form-control" id="startDateFilter" onchange="filterInvoices()" placeholder="Start Date">
+                    <input type="date" class="form-control" id="endDateFilter" onchange="filterInvoices()" placeholder="End Date">
+
+                    <div class="d-flex align-items-center gap-2" style="margin-left: auto;">
+                        <span class="text-secondary">Total: <strong id="totalCount">0</strong></span>
+                    </div>
+                </div>
+
+                <!-- Invoices Table -->
+                <div class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Invoice ID</th>
+                                    <th>Order ID</th>
+                                    <th>Invoice Date</th>
+                                    <th>Due Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoicesTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center">
+                                        <div class="loading-container">
+                                            <div class="spinner"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Generate Invoice Modal -->
+    <div class="modal" id="generateInvoiceModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Generate Invoice from Order</h3>
+                <button class="modal-close" onclick="closeGenerateInvoiceModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Select Order</label>
+                    <input type="text" class="form-control" id="orderSearchInput" placeholder="Search orders...">
+                </div>
+
+                <div id="ordersListContainer" style="max-height: 400px; overflow-y: auto; margin-top: 1rem;">
+                    <div class="loading-container">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Invoice Modal -->
+    <div class="modal" id="viewInvoiceModal">
+        <div class="modal-dialog modal-dialog-lg">
+            <div class="modal-header">
+                <h3 class="modal-title">Invoice Details</h3>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-secondary btn-sm" onclick="printInvoice()">
+                        <i class="fas fa-print"></i>
+                        Print
+                    </button>
+                    <button class="modal-close" onclick="closeViewInvoiceModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body" id="invoiceDetailsContent">
+                <div class="loading-container">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Record Payment Modal -->
+    <div class="modal" id="recordPaymentModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Record Payment</h3>
+                <button class="modal-close" onclick="closeRecordPaymentModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="paymentForm">
+                    <input type="hidden" id="paymentInvoiceId">
+
+                    <div class="form-group">
+                        <label class="form-label">Amount Due</label>
+                        <input type="text" class="form-control" id="amountDue" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="paymentAmount">Payment Amount</label>
+                        <input type="number" class="form-control" id="paymentAmount" step="0.01" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="paymentMethod">Payment Method</label>
+                        <select class="form-control" id="paymentMethod" required>
+                            <option value="">Select Method</option>
+                            <option value="CASH">Cash</option>
+                            <option value="CARD">Credit/Debit Card</option>
+                            <option value="BANK_TRANSFER">Bank Transfer</option>
+                            <option value="CHEQUE">Cheque</option>
+                            <option value="ONLINE">Online Payment</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="transactionId">Transaction ID (Optional)</label>
+                        <input type="text" class="form-control" id="transactionId">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="paymentNotes">Notes (Optional)</label>
+                        <textarea class="form-control" id="paymentNotes" rows="3"></textarea>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary" onclick="closeRecordPaymentModal()">Cancel</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check"></i>
+                            Record Payment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/invoices.js"></script>
+</body>
+</html>

@@ -166,7 +166,7 @@ document.getElementById('addUserForm').addEventListener('submit', async function
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.USERS_ADD}`, {
+        const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.USERS_CREATE}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -300,8 +300,17 @@ function setupMobileMenu() {
         menuToggle.addEventListener('click', () => {
             sidebar.classList.toggle('active');
         });
-    }
+    }  
 }
+
+// Close sidebar when clicking outside on mobile
+document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 1024) {
+        if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+            sidebar.classList.remove('active');
+        }
+    }
+});
 
 // Close modals on escape key
 document.addEventListener('keydown', function(e) {

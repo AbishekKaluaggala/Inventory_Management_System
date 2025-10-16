@@ -136,53 +136,23 @@ function initCharts() {
 
 // Initialize sales chart
 function initSalesChart() {
-    const ctx = document.getElementById('salesChart').getContext('2d');
+    const ctx = document.getElementById('salesChart');
     
-    salesChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            datasets: [{
-                label: 'Sales',
-                data: [12000, 19000, 15000, 25000, 22000, 30000, 28000],
-                borderColor: '#6366f1',
-                backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.05)'
-                    },
-                    ticks: {
-                        color: '#9ca3af',
-                        callback: function(value) {
-                            return 'Rs. ' + value.toLocaleString();
-                            }
-                    }
-                    },
-            x: {
-                grid: {
-                    color: 'rgba(255, 255, 255, 0.05)'
-                     },
-                ticks: {
-                     color: '#9ca3af'
-                        }
-                }
-            }
-        }
-    });
+    // Check if canvas element exists
+    if (!ctx) {
+        console.warn('Sales chart canvas not found');
+        return;
+    }
+    
+    const context = ctx.getContext('2d');
+    
+    // Your chart initialization code here...
+}
+
+// Initialize charts
+function initCharts() {
+    initSalesChart();
+    // Add null checks for other charts too
 }
 
 // Initialize inventory chart
