@@ -517,26 +517,27 @@ function showError(message) {
     alert('Error: ' + message);
 }
 
-// Close modals when clicking outside
-document.addEventListener('click', function(e) {
-    const addModal = document.getElementById('addProductModal');
-    const editModal = document.getElementById('editProductModal');
+// Setup mobile menu
+function setupMobileMenu() {
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
     
-    if (e.target === addModal) {
-        closeAddProductModal();
-    }
-    if (e.target === editModal) {
-        closeEditProductModal();
+    if (menuToggle) {
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+    }  
+}
+
+// Close sidebar when clicking outside on mobile
+document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 1024) {
+        if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+            sidebar.classList.remove('active');
+        }
     }
 });
 
-// Close modals with Escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeAddProductModal();
-        closeEditProductModal();
-    }
-});
 
 // Handle page refresh confirmation
 window.addEventListener('beforeunload', function(e) {
